@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { api, type Product } from "../../lib/api";
 import { ProductCard } from "../components/ProductCard";
 
@@ -23,67 +23,46 @@ export function HomePage() {
     };
   }, []);
 
-  const featured = useMemo(() => products?.[0] ?? null, [products]);
+  const heroImage = "/assets/torku1.jpg";
+  const heroLogo = "/assets/main-logo.png";
+
+  const scrollToProducts = () => {
+    const el = document.getElementById("urunler");
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <div>
-      <section className="bg-gradient-to-b from-torkuGreen-800 to-torkuGreen-700">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 md:grid-cols-2 md:items-center">
-          <div className="text-white">
-            <div className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-semibold">
-              Yeni çıkan ürünler & reklam filmleri
-            </div>
-            <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
-              Ürünleri keşfedin, reklamları izleyin.
-            </h1>
-            <p className="mt-4 text-sm leading-6 text-white/80">
-              Torku’nun yeni ürünlerini tek sayfada görün. Ürün detayına girip
-              tanıtım videolarını doğrudan siteden izleyin.
-            </p>
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              <a
-                href="#urunler"
-                className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-torkuGreen-800 hover:bg-white/90"
-              >
-                Ürünleri gör
-              </a>
-              <a
-                href={featured ? `/products/${featured.slug}` : "#"}
-                className="rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold text-white hover:bg-white/15"
-              >
-                Öne çıkan ürün
-              </a>
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-black/20 p-3 shadow-sm">
-            <div className="aspect-video overflow-hidden rounded-2xl bg-black">
-              {featured ? (
-                <div className="grid h-full place-items-center px-6 text-center text-white/80">
-                  <div>
-                    <div className="text-xs uppercase tracking-wider text-white/60">
-                      Öne çıkan
-                    </div>
-                    <div className="mt-2 text-lg font-bold">{featured.name}</div>
-                    <div className="mt-2 text-sm text-white/70">
-                      Detay sayfasında reklam videosunu izleyebilirsiniz.
-                    </div>
-                    <a
-                      className="mt-4 inline-flex rounded-xl bg-white px-4 py-3 text-sm font-semibold text-torkuGreen-800 hover:bg-white/90"
-                      href={`/products/${featured.slug}`}
-                    >
-                      Detaya git
-                    </a>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid h-full place-items-center text-sm text-white/70">
-                  {error ? "API hatası" : "Yükleniyor..."}
-                </div>
-              )}
-            </div>
-          </div>
+      <section
+        className="relative min-h-[100svh] overflow-hidden"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundPosition: "center",
+          backgroundSize: "cover",
+          filter: "brightness(1.08) saturate(1.06)"
+        }}
+      >
+        <div className="absolute inset-0 bg-black/18" />
+        <div className="relative z-10 flex min-h-[100svh] flex-col items-center justify-center px-4 text-center">
+          <img
+            src={heroLogo}
+            alt="Torku"
+            className="-mt-20 w-[190px] max-w-[55vw] drop-shadow-[0_8px_30px_rgba(0,0,0,0.55)] sm:-mt-24 sm:w-[240px]"
+          />
+          <p className="mt-6 text-2xl font-black text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.65)] sm:text-4xl">
+            Bereketi Toprağından
+          </p>
+          <button
+            type="button"
+            onClick={scrollToProducts}
+            className="group mt-16 inline-flex h-14 w-14 items-center justify-center rounded-full border border-white/80 bg-white/15 text-white backdrop-blur transition hover:bg-white/25"
+            aria-label="Aşağı kaydır"
+          >
+            <span className="text-2xl transition-transform group-hover:translate-y-1">
+              ↓
+            </span>
+          </button>
         </div>
       </section>
 
