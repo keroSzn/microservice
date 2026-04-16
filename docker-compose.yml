@@ -30,7 +30,19 @@ services:
       postgres:
         condition: service_healthy
 
+  # Backend dockerize edildiğinde aşağıdaki servisi aktif edin:
+  # backend:
+  #   build: ./backend
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - media_data:/app/media
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+
 volumes:
   pgdata:
   pgadmin_data:
+  # media_data:  # backend dockerize edildiğinde aktif edin
 
