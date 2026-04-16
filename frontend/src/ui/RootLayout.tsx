@@ -34,39 +34,12 @@ export function RootLayout() {
             : "sticky border-b border-white/10 bg-torkuGreen-800/95 backdrop-blur"
         ].join(" ")}
       >
-        <div className="mx-auto max-w-6xl px-4 py-2">
-          <div className="flex items-center justify-between gap-4">
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-white/85 sm:text-xs">
-              Torku Bir Ciftci Kooperatifi Markasidir
-            </div>
-            <div className="flex items-center gap-2">
-              {socials.map((social) => (
-                <a
-                  key={social.name}
-                  href={social.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={social.name}
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-white/70 bg-black/20 text-white transition hover:-translate-y-0.5 hover:bg-black/40"
-                  title={social.name}
-                >
-                  <social.Icon size={12} />
-                </a>
-              ))}
-            </div>
+        <div className="mx-auto grid max-w-6xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-3">
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-white/85 sm:text-xs">
+            Torku Bir Çiftçi Kooperatifi Markasıdır
           </div>
-        </div>
 
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 pb-3 pt-1">
-          <Link to="/" className="flex items-center gap-2 text-white">
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-white/10 font-black">T</div>
-            <div className="leading-tight">
-              <div className="text-sm font-semibold">Torku</div>
-              <div className="text-xs text-white/75">Yeni Urunler & Reklamlar</div>
-            </div>
-          </Link>
-
-          <nav className="flex items-center gap-5">
+          <nav className="flex items-center justify-center gap-5">
             <NavLink to="/" className={navClass} end>
               Anasayfa
             </NavLink>
@@ -83,6 +56,22 @@ export function RootLayout() {
               Reklamlar
             </a>
           </nav>
+
+          <div className="flex items-center justify-end gap-2">
+            {socials.map((social) => (
+              <a
+                key={social.name}
+                href={social.href}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={social.name}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/70 bg-black/20 text-white transition hover:-translate-y-0.5 hover:bg-black/40"
+                title={social.name}
+              >
+                <social.Icon size={15} />
+              </a>
+            ))}
+          </div>
         </div>
       </header>
 
