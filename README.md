@@ -42,19 +42,32 @@ Uygulama:
 - `http://localhost:5173`
 - Admin panel: `http://localhost:5173/admin/login`
 
-## Postgres (Docker)
+## Postgres + pgAdmin (Docker)
 
-Postgres’i ayağa kaldırmak için:
+Postgres ve pgAdmin'i ayağa kaldırmak için:
 
 ```bash
 docker compose up -d
 ```
 
-Sonra `backend/.env` içinde DB URL’i şu şekilde değiştirin:
+`backend/.env` içinde DB URL'i şu şekilde olmalı:
 
 ```env
 DATABASE_URL="postgresql+psycopg://postgres:postgres@localhost:5432/reklam_proje"
 ```
+
+pgAdmin arayüzü:
+- URL: `http://localhost:5050`
+- Email: `admin@reklam.com`
+- Password: `admin123`
+
+pgAdmin içinde server eklemek için:
+- Name: `reklam-proje-postgres`
+- Host name/address: `postgres` (Docker içinden) veya `host.docker.internal` (Windows host üzerinden)
+- Port: `5432`
+- Maintenance database: `reklam_proje`
+- Username: `postgres`
+- Password: `postgres`
 
 ## CORS
 
