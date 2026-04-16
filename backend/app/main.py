@@ -1,8 +1,7 @@
-import os
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import select
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy import inspect, select
 
 from app.api.router import api_router
 from app.core.config import settings
@@ -31,11 +30,24 @@ async def health():
     return {"status": "ok"}
 
 
+def _needs_schema_migration() -> bool:
+    insp = inspect(engine)
+    if not insp.has_table("products"):
+        return False
+    columns = {c["name"] for c in insp.get_columns("products")}
+    return "slug" in columns
+
+
 @app.on_event("startup")
 def on_startup():
     ensure_dir(settings.media_dir)
 
+    if _needs_schema_migration():
+        Base.metadata.drop_all(bind=engine)
+
     Base.metadata.create_all(bind=engine)
+
+    app.mount("/media", StaticFiles(directory=settings.media_dir), name="media")
 
     db = SessionLocal()
     try:
@@ -51,4 +63,3 @@ def on_startup():
             db.commit()
     finally:
         db.close()
-

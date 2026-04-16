@@ -1,42 +1,52 @@
 import type { Video } from "../../lib/api";
-import { api } from "../../lib/api";
 
-export function VideoPlayer({
-  video,
-  posterUrl
-}: {
-  video: Video;
-  posterUrl?: string | null;
-}) {
+function extractYoutubeId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    /^([a-zA-Z0-9_-]{11})$/,
+  ];
+  for (const pat of patterns) {
+    const m = url.match(pat);
+    if (m) return m[1];
+  }
+  return null;
+}
+
+export function VideoPlayer({ video }: { video: Video }) {
+  const youtubeId = extractYoutubeId(video.youtube_url);
+
+  if (!youtubeId) {
+    return (
+      <div className="grid aspect-video place-items-center rounded-2xl border bg-white text-sm text-slate-600">
+        Geçersiz video URL'si
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-hidden rounded-2xl border bg-black shadow-sm">
-      <video
-        className="aspect-video w-full"
-        controls
-        playsInline
-        preload="metadata"
-        poster={posterUrl ?? undefined}
-      >
-        <source src={api.videoStreamUrl(video.id)} type={video.mime_type} />
-        Tarayıcınız video oynatmayı desteklemiyor.
-      </video>
+      <div className="aspect-video">
+        <iframe
+          src={`https://www.youtube.com/embed/${youtubeId}`}
+          className="h-full w-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          title={video.title}
+        />
+      </div>
       <div className="flex items-center justify-between gap-3 bg-white px-4 py-3">
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold">{video.title}</div>
-          <div className="text-xs text-slate-500">
-            Video ID: {video.id}
-          </div>
         </div>
         <a
-          href={api.videoStreamUrl(video.id)}
-          className="shrink-0 rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200"
+          href={video.youtube_url}
+          className="shrink-0 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
           target="_blank"
           rel="noreferrer"
         >
-          Yeni sekmede aç
+          YouTube'da Aç
         </a>
       </div>
     </div>
   );
 }
-

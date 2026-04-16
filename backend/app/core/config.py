@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     media_dir: str = "./media"
     max_upload_mb: int = 250
     allowed_video_mime_types: str = "video/mp4,video/webm"
+    allowed_image_mime_types: str = "image/jpeg,image/png,image/webp,image/gif"
+    max_image_upload_mb: int = 10
 
 
 settings = Settings()

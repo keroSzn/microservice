@@ -1,15 +1,13 @@
 export type Video = {
   id: number;
   title: string;
-  mime_type: string;
-  duration_sec: number | null;
+  youtube_url: string;
   created_at: string;
 };
 
 export type Product = {
   id: number;
   name: string;
-  slug: string;
   description: string | null;
   image_url: string | null;
   is_new: boolean;
@@ -36,10 +34,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
+export function imageUrl(relativePath: string | null | undefined): string | undefined {
+  if (!relativePath) return undefined;
+  if (relativePath.startsWith("http")) return relativePath;
+  return `${API_BASE_URL}/media/${relativePath}`;
+}
+
 export const api = {
   listNewProducts: (isNew = true) =>
     request<Product[]>(`/api/products?is_new=${isNew}`),
-  getProduct: (slug: string) => request<ProductDetail>(`/api/products/${slug}`),
-  videoStreamUrl: (videoId: number) => `${API_BASE_URL}/api/videos/${videoId}/stream`
+  getProduct: (productId: number) =>
+    request<ProductDetail>(`/api/products/${productId}`)
 };
-

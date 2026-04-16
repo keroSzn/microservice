@@ -9,8 +9,7 @@ class VideoOut(BaseModel):
 
     id: int
     title: str
-    mime_type: str
-    duration_sec: int | None = None
+    youtube_url: str
     created_at: datetime
 
 
@@ -19,7 +18,6 @@ class ProductOut(BaseModel):
 
     id: int
     name: str
-    slug: str
     description: str | None = None
     image_url: str | None = None
     is_new: bool
@@ -34,7 +32,6 @@ class ProductDetailOut(ProductOut):
 
 class ProductCreate(BaseModel):
     name: str = Field(min_length=2, max_length=200)
-    slug: str = Field(min_length=2, max_length=220)
     description: str | None = None
     image_url: str | None = None
     is_new: bool = True
@@ -42,10 +39,14 @@ class ProductCreate(BaseModel):
 
 class ProductUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=2, max_length=200)
-    slug: str | None = Field(default=None, min_length=2, max_length=220)
     description: str | None = None
     image_url: str | None = None
     is_new: bool | None = None
+
+
+class VideoCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=250)
+    youtube_url: str = Field(min_length=5, max_length=500)
 
 
 class AdminLoginIn(BaseModel):
@@ -56,4 +57,3 @@ class AdminLoginIn(BaseModel):
 class TokenOut(BaseModel):
     access_token: str
     token_type: str = "bearer"
-

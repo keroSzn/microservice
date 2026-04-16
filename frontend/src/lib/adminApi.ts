@@ -1,4 +1,4 @@
-import type { Product, ProductDetail } from "./api";
+import type { Product, ProductDetail, Video } from "./api";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.toString() ?? "http://127.0.0.1:8000";
@@ -40,12 +40,28 @@ export const adminApi = {
   listProducts: (token: string) =>
     request<Product[]>("/api/admin/products", { headers: authHeaders(token) }),
 
-  createProduct: (token: string, payload: Partial<Product> & { name: string; slug: string }) =>
+  getProduct: (token: string, productId: number) =>
+    request<ProductDetail>(`/api/products/${productId}`),
+
+  createProduct: (
+    token: string,
+    payload: { name: string; description?: string; is_new?: boolean }
+  ) =>
     request<Product>("/api/admin/products", {
       method: "POST",
       headers: { ...authHeaders(token), "Content-Type": "application/json; charset=utf-8" },
       body: JSON.stringify(payload)
     }),
+
+  uploadProductImage: (token: string, productId: number, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return request<Product>(`/api/admin/products/${productId}/image`, {
+      method: "POST",
+      headers: authHeaders(token),
+      body: form
+    });
+  },
 
   updateProduct: (token: string, productId: number, payload: Partial<Product>) =>
     request<Product>(`/api/admin/products/${productId}`, {
@@ -62,8 +78,16 @@ export const adminApi = {
     if (!res.ok) throw new Error(await res.text());
   },
 
-  getPublicProductBySlug: (slug: string) =>
-    request<ProductDetail>(`/api/products/${encodeURIComponent(slug)}`),
+  addVideo: (
+    token: string,
+    productId: number,
+    payload: { title: string; youtube_url: string }
+  ) =>
+    request<Video>(`/api/admin/products/${productId}/videos`, {
+      method: "POST",
+      headers: { ...authHeaders(token), "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify(payload)
+    }),
 
   deleteVideo: async (token: string, videoId: number) => {
     const res = await fetch(`${API_BASE_URL}/api/admin/products/videos/${videoId}`, {
@@ -71,40 +95,5 @@ export const adminApi = {
       headers: authHeaders(token)
     });
     if (!res.ok) throw new Error(await res.text());
-  },
-
-  uploadVideo: (
-    token: string,
-    productId: number,
-    title: string,
-    file: File,
-    onProgress?: (pct: number) => void
-  ) =>
-    new Promise<{ id: number }>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", `${API_BASE_URL}/api/admin/products/${productId}/videos`);
-      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-      xhr.responseType = "json";
-
-      xhr.upload.onprogress = (evt) => {
-        if (!evt.lengthComputable) return;
-        const pct = Math.round((evt.loaded / evt.total) * 100);
-        onProgress?.(pct);
-      };
-
-      xhr.onerror = () => reject(new Error("Upload failed"));
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(xhr.response as { id: number });
-        } else {
-          reject(new Error(typeof xhr.response === "string" ? xhr.response : JSON.stringify(xhr.response)));
-        }
-      };
-
-      const form = new FormData();
-      form.append("title", title);
-      form.append("file", file);
-      xhr.send(form);
-    })
+  }
 };
-

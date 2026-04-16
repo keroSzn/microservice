@@ -4,18 +4,20 @@ import { api, type ProductDetail, type Video } from "../../lib/api";
 import { VideoPlayer } from "../components/VideoPlayer";
 
 export function ProductPage() {
-  const { slug } = useParams();
+  const { productId } = useParams();
+  const numericId = Number(productId);
+
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!slug) return;
+    if (!Number.isFinite(numericId) || numericId <= 0) return;
     let alive = true;
     setError(null);
     setProduct(null);
     api
-      .getProduct(slug)
+      .getProduct(numericId)
       .then((p) => {
         if (!alive) return;
         setProduct(p);
@@ -28,7 +30,7 @@ export function ProductPage() {
     return () => {
       alive = false;
     };
-  }, [slug]);
+  }, [numericId]);
 
   const activeVideo: Video | null = useMemo(() => {
     if (!product) return null;
@@ -83,10 +85,10 @@ export function ProductPage() {
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           {activeVideo ? (
-            <VideoPlayer video={activeVideo} posterUrl={product.image_url} />
+            <VideoPlayer video={activeVideo} />
           ) : (
             <div className="grid aspect-video place-items-center rounded-2xl border bg-white text-sm text-slate-600">
-              Bu ürün için henüz video yüklenmemiş.
+              Bu ürün için henüz video eklenmemiş.
             </div>
           )}
         </div>
@@ -110,18 +112,12 @@ export function ProductPage() {
                   ].join(" ")}
                 >
                   <div className="font-semibold">{v.title}</div>
-                  <div className="mt-1 text-xs text-slate-500">{v.mime_type}</div>
                 </button>
               ))
             )}
-          </div>
-
-          <div className="mt-6 rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
-            Video oynatma endpoint’i HTTP Range destekler; bu sayede ileri/geri sarma stabil çalışır.
           </div>
         </aside>
       </div>
     </div>
   );
 }
-

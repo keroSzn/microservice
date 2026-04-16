@@ -20,12 +20,11 @@ def list_products(is_new: bool | None = None, db: Session = Depends(get_db)):
     return list(res.scalars().all())
 
 
-@router.get("/products/{slug}", response_model=ProductDetailOut)
-def get_product(slug: str, db: Session = Depends(get_db)):
-    stmt = select(Product).where(Product.slug == slug).options(selectinload(Product.videos))
+@router.get("/products/{product_id}", response_model=ProductDetailOut)
+def get_product(product_id: int, db: Session = Depends(get_db)):
+    stmt = select(Product).where(Product.id == product_id).options(selectinload(Product.videos))
     res = db.execute(stmt)
     product = res.scalar_one_or_none()
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
     return product
-
