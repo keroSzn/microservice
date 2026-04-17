@@ -4,6 +4,7 @@ import { HomePage } from "./ui/pages/HomePage";
 import { ProductPage } from "./ui/pages/ProductPage";
 import { AdminLayout } from "./ui/admin/AdminLayout";
 import { AdminLoginPage } from "./ui/admin/AdminLoginPage";
+import { AdminAdminsPage } from "./ui/admin/AdminAdminsPage";
 import { AdminProductsPage } from "./ui/admin/AdminProductsPage";
 import { AdminProductDetailPage } from "./ui/admin/AdminProductDetailPage";
 
@@ -20,6 +21,7 @@ export const router = createBrowserRouter([
         children: [
           { path: "login", element: <AdminLoginPage /> },
           { path: "products", element: <AdminProductsPage /> },
+          { path: "admins", element: <AdminAdminsPage /> },
           { path: "products/:productId", element: <AdminProductDetailPage /> }
         ]
       }

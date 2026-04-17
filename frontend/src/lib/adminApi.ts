@@ -3,10 +3,36 @@ import type { Product, ProductDetail, Video } from "./api";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.toString() ?? "http://127.0.0.1:8000";
 
+export type AdminUser = {
+  id: number;
+  email: string;
+  created_at: string;
+};
+
 function authHeaders(token: string) {
   return {
     Authorization: `Bearer ${token}`
   };
+}
+
+function humanizeField(field: string): string {
+  switch (field) {
+    case "email":
+      return "E-posta";
+    case "password":
+      return "Şifre";
+    case "file":
+      return "Dosya";
+    default:
+      return field;
+  }
+}
+
+function humanizePydanticMsg(msg: string): string {
+  // FastAPI/Pydantic varsayılan mesajlarını daha kullanıcı dostu yapalım
+  if (msg.toLowerCase().includes("at least")) return "En az gerekli karakter sayısını karşılamıyor.";
+  if (msg.toLowerCase().includes("field required")) return "Bu alan zorunludur.";
+  return msg;
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -18,8 +44,36 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     }
   });
   if (!res.ok) {
+    const contentType = res.headers.get("content-type") ?? "";
+    if (contentType.includes("application/json")) {
+      const data = (await res.json().catch(() => null)) as any;
+      const detail = data?.detail;
+
+      // detail: string
+      if (typeof detail === "string" && detail.trim()) {
+        throw new Error(detail);
+      }
+
+      // detail: [{loc, msg, type, ...}, ...]  (422 validation)
+      if (Array.isArray(detail) && detail.length > 0) {
+        const items = detail
+          .map((d: any) => {
+            const locArr = Array.isArray(d?.loc) ? d.loc : [];
+            const field = locArr[locArr.length - 1];
+            const label = typeof field === "string" ? humanizeField(field) : "Alan";
+            const msg = typeof d?.msg === "string" ? humanizePydanticMsg(d.msg) : "Geçersiz değer";
+            return `${label}: ${msg}`;
+          })
+          .filter(Boolean);
+
+        if (items.length) {
+          throw new Error(items.join("\n"));
+        }
+      }
+    }
+
     const text = await res.text().catch(() => "");
-    throw new Error(text || `HTTP ${res.status}`);
+    throw new Error(text || "İşlem başarısız. Lütfen bilgileri kontrol edin.");
   }
   return (await res.json()) as T;
 }
@@ -95,5 +149,15 @@ export const adminApi = {
       headers: authHeaders(token)
     });
     if (!res.ok) throw new Error(await res.text());
-  }
+  },
+
+  listAdmins: (token: string) =>
+    request<AdminUser[]>("/api/admin/auth/admins", { headers: authHeaders(token) }),
+
+  createAdmin: (token: string, payload: { email: string; password: string }) =>
+    request<AdminUser>("/api/admin/auth/admins", {
+      method: "POST",
+      headers: { ...authHeaders(token), "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify(payload)
+    })
 };

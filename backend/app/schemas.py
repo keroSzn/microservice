@@ -54,6 +54,19 @@ class AdminLoginIn(BaseModel):
     password: str = Field(min_length=6, max_length=200)
 
 
+class AdminOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    email: EmailStr
+    created_at: datetime
+
+
+class AdminCreateIn(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=6, max_length=200)
+
+
 class TokenOut(BaseModel):
     access_token: str
     token_type: str = "bearer"

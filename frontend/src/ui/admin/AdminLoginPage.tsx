@@ -5,8 +5,8 @@ import { getAdminToken, setAdminToken } from "./auth";
 
 export function AdminLoginPage() {
   const existing = getAdminToken();
-  const [email, setEmail] = useState("admin@example.com");
-  const [password, setPassword] = useState("admin12345");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,9 +15,6 @@ export function AdminLoginPage() {
   return (
     <div className="rounded-2xl border bg-white p-6 shadow-sm">
       <div className="text-sm font-black">Giriş</div>
-      <p className="mt-1 text-sm text-slate-600">
-        Varsayılan admin hesabı `.env` üzerinden yönetilir.
-      </p>
 
       {error ? (
         <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
@@ -36,7 +33,8 @@ export function AdminLoginPage() {
             setAdminToken(token);
             window.location.href = "/admin/products";
           } catch (err) {
-            setError(err instanceof Error ? err.message : "Giriş başarısız");
+            // Güvenlik/UX: Login hatalarında detay vermeyelim (validasyon, uzunluk, vb.)
+            setError("E-posta veya şifre hatalı.");
           } finally {
             setLoading(false);
           }

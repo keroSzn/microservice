@@ -62,6 +62,9 @@ export function AdminLayout() {
               <NavLink to="/admin/products" className={navClass} end>
                 <span>📦</span> Ürünler
               </NavLink>
+              <NavLink to="/admin/admins" className={navClass}>
+                <span>👤</span> Adminler
+              </NavLink>
             </nav>
           </aside>
 
