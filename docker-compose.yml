@@ -1,13 +1,14 @@
 services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
   postgres:
     image: postgres:16
     container_name: reklam_proje_postgres
+    restart: unless-stopped
     environment:
       POSTGRES_DB: reklam_proje
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -16,9 +17,11 @@ services:
       timeout: 5s
       retries: 5
 
+  # ── pgAdmin (opsiyonel – sadece geliştirme/bakım için) ──────────────────────
   pgadmin:
     image: dpage/pgadmin4:8
     container_name: reklam_proje_pgadmin
+    restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@reklam.com
       PGADMIN_DEFAULT_PASSWORD: admin123
@@ -30,19 +33,38 @@ services:
       postgres:
         condition: service_healthy
 
-  # Backend dockerize edildiğinde aşağıdaki servisi aktif edin:
-  # backend:
-  #   build: ./backend
-  #   ports:
-  #     - "8000:8000"
-  #   volumes:
-  #     - media_data:/app/media
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
+  # ── Backend (FastAPI / uvicorn) ─────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: reklam_proje_backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    volumes:
+      - media_data:/app/media   # Yüklenen görseller kalıcı
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Dışarıya port açmıyoruz; frontend/nginx üzerinden erişilir.
+    # Doğrudan debug erişimi için şu satırı aç:
+    # ports:
+    #   - "8000:8000"
+
+  # ── Frontend (React build → Nginx + API proxy) ──────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: reklam_proje_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"       # Uygulama bu port'tan erişilir: http://sunucu-ip
+    depends_on:
+      - backend
 
 volumes:
-  pgdata:
-  pgadmin_data:
-  # media_data:  # backend dockerize edildiğinde aktif edin
-
+  pgdata:        # PostgreSQL verileri
+  pgadmin_data:  # pgAdmin ayarları
+  media_data:    # Yüklenen ürün görselleri
