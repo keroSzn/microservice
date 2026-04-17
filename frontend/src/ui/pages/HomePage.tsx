@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api, type Product } from "../../lib/api";
 import { ProductCard } from "../components/ProductCard";
 
 export function HomePage() {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const trackRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -13,6 +15,7 @@ export function HomePage() {
       .then((p) => {
         if (!alive) return;
         setProducts(p);
+        setActiveIdx(0);
       })
       .catch((e: unknown) => {
         if (!alive) return;
@@ -30,6 +33,45 @@ export function HomePage() {
     const el = document.getElementById("urunler");
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const dotCount = useMemo(() => products?.length ?? 0, [products]);
+
+  const syncActiveFromScroll = () => {
+    const track = trackRef.current;
+    if (!track) return;
+    const first = track.children.item(0) as HTMLElement | null;
+    if (!first) return;
+    const gap = 20; // gap-5
+    const step = first.offsetWidth + gap;
+    if (step <= 0) return;
+    const idx = Math.round(track.scrollLeft / step);
+    setActiveIdx(Math.max(0, Math.min(idx, (products?.length ?? 1) - 1)));
+  };
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(syncActiveFromScroll);
+    };
+    track.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      track.removeEventListener("scroll", onScroll);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products]);
+
+  const scrollToIndex = (idx: number) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const el = track.children.item(idx) as HTMLElement | null;
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+    setActiveIdx(idx);
   };
 
   return (
@@ -88,19 +130,51 @@ export function HomePage() {
         ) : null}
 
         {!products ? (
-          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-72 animate-pulse rounded-2xl border bg-white"
-              />
-            ))}
+          <div className="relative mt-6">
+            <div className="no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-72 w-[78%] shrink-0 snap-start animate-pulse rounded-2xl border bg-white sm:w-[48%] lg:w-[calc((100%-40px)/3)]"
+                />
+              ))}
+            </div>
           </div>
         ) : (
-          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+          <div className="relative mt-6">
+            <div
+              ref={trackRef}
+              className="no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-2"
+            >
+              {products.map((p) => (
+                <div
+                  key={p.id}
+                  className="w-[78%] shrink-0 snap-start sm:w-[48%] lg:w-[calc((100%-40px)/3)]"
+                >
+                  <ProductCard product={p} />
+                </div>
+              ))}
+            </div>
+
+            {dotCount > 1 ? (
+              <div className="mt-4 flex items-center justify-center gap-2">
+                {Array.from({ length: dotCount }).map((_, i) => {
+                  const isActive = i === activeIdx;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      aria-label={`Ürün ${i + 1}`}
+                      onClick={() => scrollToIndex(i)}
+                      className={[
+                        "h-2.5 w-2.5 rounded-full transition",
+                        isActive ? "bg-red-500" : "bg-slate-300 hover:bg-slate-400"
+                      ].join(" ")}
+                    />
+                  );
+                })}
+              </div>
+            ) : null}
           </div>
         )}
       </section>
