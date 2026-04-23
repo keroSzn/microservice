@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Declarative Web Clients Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    
+    <div class="container">
+        <header>
+            <h1>Microservices Hub</h1>
+            <p>Demonstrating Declarative Web Clients</p>
+        </header>
+
+        <main>
+            <div class="action-section">
+                <button id="fetchBtn" class="glow-button">
+                    <span>Create Order (Fetch Data)</span>
+                    <div class="loader" id="loader"></div>
+                </button>
+            </div>
+
+            <div id="results" class="results-grid hidden">
+                <!-- User Service Card (OpenFeign) -->
+                <div class="glass-card fade-in" style="--delay: 0.1s">
+                    <div class="card-header">
+                        <span class="badge openfeign">OpenFeign</span>
+                        <h2>User Service</h2>
+                    </div>
+                    <div class="card-content" id="userContent">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Inventory Service Card (WebClient) -->
+                <div class="glass-card fade-in" style="--delay: 0.2s">
+                    <div class="card-header">
+                        <span class="badge webclient">WebClient</span>
+                        <h2>Inventory Service</h2>
+                    </div>
+                    <div class="card-content" id="productContent">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- External Post Card (Netflix Feign) -->
+                <div class="glass-card fade-in" style="--delay: 0.3s">
+                    <div class="card-header">
+                        <span class="badge netflix">Netflix Feign</span>
+                        <h2>External API</h2>
+                    </div>
+                    <div class="card-content" id="postContent">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <div id="statusBadge" class="status-badge hidden fade-in" style="--delay: 0.5s">
+                <!-- Populated by JS -->
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

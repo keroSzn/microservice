@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  user-service:
+    build:
+      context: ./user-service
+    ports:
+      - "8081:8081"
+    container_name: user-service
+
+  inventory-service:
+    build:
+      context: ./inventory-service
+    ports:
+      - "8082:8082"
+    container_name: inventory-service
+
+  order-aggregator:
+    build:
+      context: ./order-aggregator
+    ports:
+      - "8080:8080"
+    container_name: order-aggregator
+    depends_on:
+      - user-service
+      - inventory-service
