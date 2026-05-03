@@ -20,10 +20,11 @@ Before Spring's extensive wrapping and auto-configuration, Netflix Feign existed
 ## 4. Development Details
 
 ### 4.1 Architecture
-The system consists of three independent microservices running on Java 21 and Spring Boot 3:
-1. **User Service (Port 8081)**: Manages customer information.
-2. **Inventory Service (Port 8082)**: Manages product stock.
-3. **Order Aggregator (Port 8080)**: Acts as the orchestration layer combining the clients.
+The system consists of three independent microservices running on Java 21 and Spring Boot 3, backed by a central PostgreSQL database:
+1. **User Service (Port 8081)**: Manages customer information. Persists data to the `users` table via Spring Data JPA.
+2. **Inventory Service (Port 8082)**: Manages product stock. Persists data to the `products` table via Spring Data JPA.
+3. **Order Aggregator (Port 8080)**: Acts as the orchestration layer combining the clients. Also manages the Admin Dashboard UI and persists generated orders to the `orders` table.
+4. **PostgreSQL Database**: A containerized relational database providing data persistence for all services.
 
 ### 4.2 Implementation of Clients in Order Aggregator
 
@@ -68,8 +69,17 @@ return Feign.builder()
             .target(PostClient.class, url);
 ```
 
-### 4.3 Containerization
-Every service contains a multi-stage `Dockerfile`. The stage `maven:3.9.6-eclipse-temurin-21-alpine` is used for compiling the Java code, and `eclipse-temurin:21-jre-alpine` acts as the lean runtime image. `docker-compose.yml` bridges the internal networking domains so URLs such as `http://user-service:8081` resolve perfectly during communication. 
+### 4.3 Database and Persistence
+Transitioning from simple in-memory data structures, the project utilizes **PostgreSQL** deployed via Docker Compose. **Spring Data JPA** is employed across all microservices to map Java domain objects (`@Entity`) to relational tables. This architecture demonstrates how declarative web clients can be seamlessly integrated with persistent backend storage to perform real-world CRUD operations across the network.
+
+### 4.4 Admin Dashboard UI
+To interactively demonstrate the communication between services, a custom **Admin Dashboard UI** was developed and served by the Order Aggregator. This UI allows users to:
+- Add and list users (triggering OpenFeign POST/GET calls).
+- Add and list inventory products (triggering WebClient POST/GET calls).
+- Create orders dynamically, which fetches data across services and persists the resulting order state in the PostgreSQL database.
+
+### 4.5 Containerization
+Every service contains a multi-stage `Dockerfile`. The stage `maven:3.9.6-eclipse-temurin-21-alpine` is used for compiling the Java code, and `eclipse-temurin:21-jre-alpine` acts as the lean runtime image. `docker-compose.yml` bridges the internal networking domains so URLs such as `http://user-service:8081` and database connections like `jdbc:postgresql://postgres-db:5432/microservices_db` resolve perfectly during communication. 
 
 ## 5. Conclusion
 Declarative clients drastically reduce the cognitive load involved in network communication between microservices. While OpenFeign remains the industry standard for synchronous Spring applications due to its mature ecosystem, Spring 6 HTTP Interfaces (powered by WebClient) represent the modern, native, and reactive future of inter-service calls. Understanding pure Netflix Feign provides vital historical and mechanistic context to how these proxy frameworks operate underneath.

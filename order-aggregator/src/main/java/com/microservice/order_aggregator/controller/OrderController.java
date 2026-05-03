@@ -7,11 +7,13 @@ import com.microservice.order_aggregator.dto.OrderResponse;
 import com.microservice.order_aggregator.dto.PostDTO;
 import com.microservice.order_aggregator.dto.ProductDTO;
 import com.microservice.order_aggregator.dto.UserDTO;
+import com.microservice.order_aggregator.entity.OrderEntity;
+import com.microservice.order_aggregator.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/orders")
@@ -21,25 +23,53 @@ public class OrderController {
     private final UserClient userClient;
     private final InventoryClient inventoryClient;
     private final PostClient postClient;
+    private final OrderRepository orderRepository;
 
     @GetMapping("/create/{userId}/{productId}")
     public OrderResponse createOrder(@PathVariable Long userId, @PathVariable Long productId) {
 
-        // 1. Fetch from User Service using OpenFeign
         UserDTO user = userClient.getUser(userId);
-
-        // 2. Fetch from Inventory Service using WebClient (HTTP Interface)
         ProductDTO product = inventoryClient.getProduct(productId);
-
-        // 3. Fetch from External fake API using Netflix Feign (Core)
-        // This is just to demonstrate its usage.
         PostDTO post = postClient.getPostById(1L);
 
-        // Put them together into a response
-        if (user.id() != null && product.id() != null) {
-            return new OrderResponse("ORDER_CREATED_SUCCESSFULLY", user, product, post);
-        } else {
-            return new OrderResponse("ORDER_FAILED", user, product, post);
+        String status = "ORDER_FAILED";
+        if (user != null && user.id() != null && product != null && product.id() != null) {
+            status = "ORDER_CREATED_SUCCESSFULLY";
+            
+            OrderEntity orderEntity = new OrderEntity();
+            orderEntity.setUserId(userId);
+            orderEntity.setProductId(productId);
+            orderEntity.setStatus(status);
+            orderEntity.setOrderDate(LocalDateTime.now());
+            orderRepository.save(orderEntity);
         }
+
+        return new OrderResponse(status, user, product, post);
+    }
+
+    @GetMapping("/history")
+    public List<OrderEntity> getOrderHistory() {
+        return orderRepository.findAll();
+    }
+
+    // Proxy endpoints for Admin UI
+    @GetMapping("/proxy/users")
+    public List<UserDTO> getAllUsers() {
+        return userClient.getAllUsers();
+    }
+
+    @PostMapping("/proxy/users")
+    public UserDTO createUser(@RequestBody UserDTO user) {
+        return userClient.createUser(user);
+    }
+
+    @GetMapping("/proxy/products")
+    public List<ProductDTO> getAllProducts() {
+        return inventoryClient.getAllProducts();
+    }
+
+    @PostMapping("/proxy/products")
+    public ProductDTO createProduct(@RequestBody ProductDTO product) {
+        return inventoryClient.createProduct(product);
     }
 }

@@ -1,11 +1,30 @@
 version: '3.8'
 services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_DB: microservices_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d microservices_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   user-service:
     build:
       context: ./user-service
     ports:
       - "8081:8081"
     container_name: user-service
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   inventory-service:
     build:
@@ -13,6 +32,9 @@ services:
     ports:
       - "8082:8082"
     container_name: inventory-service
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   order-aggregator:
     build:
@@ -21,5 +43,12 @@ services:
       - "8080:8080"
     container_name: order-aggregator
     depends_on:
-      - user-service
-      - inventory-service
+      postgres:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+      inventory-service:
+        condition: service_started
+
+volumes:
+  postgres_data:

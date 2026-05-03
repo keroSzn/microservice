@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microservices Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-weight: 600;
+        }
+        .nav-btn.active {
+            background: var(--primary-glow);
+            border-color: var(--primary-glow);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease forwards;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .data-table th, .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .data-table th {
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+        .data-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .split-layout {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .full-width {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    
+    <div class="container" style="max-width: 1400px;">
+        <header>
+            <h1>Admin Dashboard</h1>
+            <p>PostgreSQL DB Management & Order Creation</p>
+            <div style="margin-top: 1rem;">
+                <a href="/" style="color: var(--text-secondary); text-decoration: none;">&larr; Back to Client Demo</a>
+            </div>
+        </header>
+
+        <nav class="admin-nav">
+            <button class="nav-btn active" onclick="switchTab('users')">Users</button>
+            <button class="nav-btn" onclick="switchTab('products')">Inventory</button>
+            <button class="nav-btn" onclick="switchTab('orders')">Orders</button>
+        </nav>
+
+        <main>
+            <!-- USERS TAB -->
+            <div id="users" class="tab-content active">
+                <div class="split-layout">
+                    <div class="glass-card">
+                        <h3>Add New User</h3>
+                        <form id="addUserForm" style="margin-top: 1.5rem;">
+                            <div class="input-group">
+                                <label>Name</label>
+                                <input type="text" id="newUserName" required placeholder="John Doe">
+                            </div>
+                            <div class="input-group">
+                                <label>Email</label>
+                                <input type="email" id="newUserEmail" required placeholder="john@example.com">
+                            </div>
+                            <div class="input-group">
+                                <label>Balance ($)</label>
+                                <input type="number" step="0.01" id="newUserBalance" required placeholder="1500.00">
+                            </div>
+                            <button type="submit" class="glow-button" style="width: 100%; justify-content: center; margin-top: 1rem;">Save User</button>
+                        </form>
+                    </div>
+                    <div class="glass-card">
+                        <div class="admin-header">
+                            <h3>Database Users</h3>
+                            <button onclick="loadUsers()" class="nav-btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Refresh</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PRODUCTS TAB -->
+            <div id="products" class="tab-content">
+                <div class="split-layout">
+                    <div class="glass-card">
+                        <h3>Add New Product</h3>
+                        <form id="addProductForm" style="margin-top: 1.5rem;">
+                            <div class="input-group">
+                                <label>Product Name</label>
+                                <input type="text" id="newProductName" required placeholder="Mechanical Keyboard">
+                            </div>
+                            <div class="input-group">
+                                <label>Price ($)</label>
+                                <input type="number" step="0.01" id="newProductPrice" required placeholder="120.00">
+                            </div>
+                            <div class="input-group">
+                                <label>Stock</label>
+                                <input type="number" id="newProductStock" required placeholder="50">
+                            </div>
+                            <button type="submit" class="glow-button" style="width: 100%; justify-content: center; margin-top: 1rem;">Save Product</button>
+                        </form>
+                    </div>
+                    <div class="glass-card">
+                        <div class="admin-header">
+                            <h3>Database Inventory</h3>
+                            <button onclick="loadProducts()" class="nav-btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Refresh</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTableBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ORDERS TAB -->
+            <div id="orders" class="tab-content">
+                <div class="split-layout">
+                    <div class="glass-card">
+                        <h3>Create Order</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">Select from existing database records.</p>
+                        <form id="createOrderForm">
+                            <div class="input-group">
+                                <label>Select User</label>
+                                <select id="orderUserSelect" required style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: white; padding: 0.75rem 1rem; border-radius: 8px; font-family: inherit; font-size: 1rem;">
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Select Product</label>
+                                <select id="orderProductSelect" required style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: white; padding: 0.75rem 1rem; border-radius: 8px; font-family: inherit; font-size: 1rem;">
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <button type="submit" class="glow-button" style="width: 100%; justify-content: center; margin-top: 1rem;">Process Order</button>
+                        </form>
+                    </div>
+                    <div class="glass-card">
+                        <div class="admin-header">
+                            <h3>Order History</h3>
+                            <button onclick="loadOrders()" class="nav-btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Refresh</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>User ID</th>
+                                    <th>Product ID</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

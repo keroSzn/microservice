@@ -15,7 +15,7 @@ cd microservice
 ```
 
 ## Step 2: Build and Run Services using Docker
-The project includes a `docker-compose.yml` file which manages 3 distinct microservices (`user-service`, `inventory-service`, `order-aggregator`).
+The project includes a `docker-compose.yml` file which manages 4 distinct containers (a PostgreSQL Database and 3 microservices: `user-service`, `inventory-service`, `order-aggregator`).
 
 Run the following command from the root directory of the project (where docker-compose.yml is located):
 ```bash
@@ -25,9 +25,10 @@ This command will:
 1. Download a Maven + JDK image to compile the Java 21 Spring Boot apps in an isolated environment.
 2. Build the final lightweight JRE images for all 3 microservices.
 3. Start the containers and map them to ports:
+   - `postgres-db`: 5432 (Internal Database)
    - `user-service`: http://localhost:8081
    - `inventory-service`: http://localhost:8082
-   - `order-aggregator`: http://localhost:8080
+   - `order-aggregator` (Admin Panel UI): http://localhost:8080
 
 *(The initial build might take a few minutes as it downloads maven dependencies).*
 
@@ -43,41 +44,20 @@ You can view the logs of the order aggregator by running:
 docker-compose logs -f order-aggregator
 ```
 
-## Step 4: Testing the Endpoints (API)
+## Step 4: Testing the Setup (Admin Dashboard)
 
-Once the services are up and running, you can test if the Declarative Web Service Clients are working by calling the `order-aggregator` API.
+Instead of manually calling endpoints via Postman, this project features a built-in **Admin Dashboard UI** to easily interact with the Database via the declarative clients.
 
-**Test Endpoint:**
-Open your browser or Postman and go to:
+1. Open your browser and go to:
 ```
-http://localhost:8080/orders/create/1/101
+http://localhost:8080/admin.html
 ```
 
-**Expected JSON Response:**
-```json
-{
-  "status": "ORDER_CREATED_SUCCESSFULLY",
-  "user": {
-    "id": 1,
-    "name": "Ali Yilmaz",
-    "email": "ali@example.com",
-    "balance": 1500.0
-  },
-  "product": {
-    "id": 101,
-    "name": "Laptop",
-    "price": 1200.0,
-    "stock": 10
-  },
-  "externalPost": {
-    "id": 1,
-    "userId": 1,
-    "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
-    "body": "quia et suscipit\nsuscipit recusandae consequuntur..."
-  }
-}
-```
-*Note that OpenFeign fetched the user, WebClient fetched the product, and Netflix Feign fetched the externalPost.*
+2. **Add Users & Products:**
+Navigate to the "Users" and "Inventory" tabs to create real database entries. The proxy forwards these requests to the internal microservices using OpenFeign and WebClient.
+
+3. **Create an Order:**
+Go to the "Orders" tab. Select the User and Product you just created from the dropdown menus. When you click "Process Order", the system will fetch the data via our 3 Declarative Clients and save the result into the PostgreSQL Database.
 
 ## Stopping the Project
 To stop the microservices, simply run:
