@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Declarative Web Clients Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .hub-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(220px, 1fr));
+            gap: 1rem;
+            width: min(760px, 100%);
+            margin: 0 auto;
+        }
+        .hub-link {
+            text-decoration: none;
+        }
+        .hub-button {
+            width: 100%;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 16px;
+            padding: 1.1rem 1.2rem;
+            text-align: center;
+        }
+        .hub-button.primary {
+            border-color: rgba(59, 130, 246, 0.6);
+            box-shadow: 0 0 24px rgba(59, 130, 246, 0.25);
+        }
+        .hub-button.secondary {
+            border-color: rgba(139, 92, 246, 0.6);
+            box-shadow: 0 0 24px rgba(139, 92, 246, 0.25);
+        }
+        .hub-subtitle {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        @media (max-width: 700px) {
+            .hub-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    
+    <div class="container">
+        <header>
+            <h1>Microservices Hub</h1>
+            <p>Demonstrating Declarative Web Clients</p>
+        </header>
+
+        <main>
+            <div class="action-section">
+                <div class="hub-actions">
+                    <a href="/admin.html" class="hub-link">
+                        <button class="glow-button hub-button primary" type="button">Admin Dashboard</button>
+                    </a>
+                    <a href="/process.html" class="hub-link">
+                        <button class="glow-button hub-button secondary" type="button">Process Visualizer</button>
+                    </a>
+                </div>
+            </div>
+            <div class="hub-subtitle">
+                Demo akislarini yonetmek icin yukaridaki ekrandan birini sec.
+            </div>
+        </main>
+    </div>
+</body>
+</html>
