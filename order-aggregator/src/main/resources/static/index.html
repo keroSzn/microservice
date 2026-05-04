@@ -8,6 +8,46 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .hub-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(220px, 1fr));
+            gap: 1rem;
+            width: min(760px, 100%);
+            margin: 0 auto;
+        }
+        .hub-link {
+            text-decoration: none;
+        }
+        .hub-button {
+            width: 100%;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 16px;
+            padding: 1.1rem 1.2rem;
+            text-align: center;
+        }
+        .hub-button.primary {
+            border-color: rgba(59, 130, 246, 0.6);
+            box-shadow: 0 0 24px rgba(59, 130, 246, 0.25);
+        }
+        .hub-button.secondary {
+            border-color: rgba(139, 92, 246, 0.6);
+            box-shadow: 0 0 24px rgba(139, 92, 246, 0.25);
+        }
+        .hub-subtitle {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        @media (max-width: 700px) {
+            .hub-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="blob blob-1"></div>
@@ -17,60 +57,23 @@
         <header>
             <h1>Microservices Hub</h1>
             <p>Demonstrating Declarative Web Clients</p>
-            <div style="margin-top: 1rem;">
-                <a href="/admin.html" style="color: var(--primary-glow); text-decoration: none; font-weight: 600; font-size: 1.1rem;">Admin Dashboard (PostgreSQL) &rarr;</a>
-            </div>
         </header>
 
         <main>
             <div class="action-section">
-                <button id="fetchBtn" class="glow-button">
-                    <span>Create Order (Fetch Data)</span>
-                    <div class="loader" id="loader"></div>
-                </button>
-            </div>
-
-            <div id="results" class="results-grid hidden">
-                <!-- User Service Card (OpenFeign) -->
-                <div class="glass-card fade-in" style="--delay: 0.1s">
-                    <div class="card-header">
-                        <span class="badge openfeign">OpenFeign</span>
-                        <h2>User Service</h2>
-                    </div>
-                    <div class="card-content" id="userContent">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-
-                <!-- Inventory Service Card (WebClient) -->
-                <div class="glass-card fade-in" style="--delay: 0.2s">
-                    <div class="card-header">
-                        <span class="badge webclient">WebClient</span>
-                        <h2>Inventory Service</h2>
-                    </div>
-                    <div class="card-content" id="productContent">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-
-                <!-- External Post Card (Netflix Feign) -->
-                <div class="glass-card fade-in" style="--delay: 0.3s">
-                    <div class="card-header">
-                        <span class="badge netflix">Netflix Feign</span>
-                        <h2>External API</h2>
-                    </div>
-                    <div class="card-content" id="postContent">
-                        <!-- Populated by JS -->
-                    </div>
+                <div class="hub-actions">
+                    <a href="/admin.html" class="hub-link">
+                        <button class="glow-button hub-button primary" type="button">Admin Dashboard</button>
+                    </a>
+                    <a href="/process.html" class="hub-link">
+                        <button class="glow-button hub-button secondary" type="button">Process Visualizer</button>
+                    </a>
                 </div>
             </div>
-            
-            <div id="statusBadge" class="status-badge hidden fade-in" style="--delay: 0.5s">
-                <!-- Populated by JS -->
+            <div class="hub-subtitle">
+                Demo akislarini yonetmek icin yukaridaki ekrandan birini sec.
             </div>
         </main>
     </div>
-
-    <script src="script.js"></script>
 </body>
 </html>

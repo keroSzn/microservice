@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process Visualizer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .process-layout {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+        .panel-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.9rem;
+        }
+        .control-form {
+            display: grid;
+            gap: 0.9rem;
+        }
+        .control-form .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+        .control-form label {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .control-form select {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.78);
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            color: #f8fafc;
+            padding: 0.75rem 0.95rem;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .control-form select:focus {
+            border-color: rgba(96, 165, 250, 0.95);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .qty-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: rgba(15, 23, 42, 0.8);
+            color: #f8fafc;
+            font-size: 1.15rem;
+            cursor: pointer;
+        }
+        .qty-input {
+            width: 84px;
+            background: rgba(15, 23, 42, 0.78);
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            color: #f8fafc;
+            padding: 0.55rem 0.6rem;
+            border-radius: 10px;
+            text-align: center;
+            font-family: inherit;
+            font-weight: 700;
+        }
+        .step-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.55rem;
+        }
+        .step-btn {
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: rgba(15, 23, 42, 0.82);
+            color: #e2e8f0;
+            border-radius: 10px;
+            padding: 0.58rem 0.5rem;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.84rem;
+        }
+        .step-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .terminal {
+            background: #020617;
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 14px;
+            min-height: 360px;
+            max-height: 360px;
+            overflow: auto;
+            padding: 0.9rem 1rem;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 0.8rem;
+            line-height: 1.55;
+        }
+        .terminal-line {
+            color: #cbd5e1;
+            white-space: pre-wrap;
+            margin-bottom: 0.2rem;
+        }
+        .terminal-line.info { color: #38bdf8; }
+        .terminal-line.ok { color: #4ade80; }
+        .terminal-line.warn { color: #fbbf24; }
+        .terminal-line.error { color: #f87171; }
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: grid;
+            gap: 0.6rem;
+            width: min(360px, calc(100vw - 32px));
+        }
+        .toast {
+            border-radius: 12px;
+            padding: 0.8rem 0.9rem;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            backdrop-filter: blur(12px);
+            background: rgba(15, 23, 42, 0.92);
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 28px rgba(2, 6, 23, 0.5);
+            animation: toastIn 0.22s ease;
+        }
+        .toast.success { border-color: rgba(34, 197, 94, 0.6); }
+        .toast.error { border-color: rgba(239, 68, 68, 0.65); }
+        .toast.warn { border-color: rgba(245, 158, 11, 0.65); }
+        @keyframes toastIn {
+            from { transform: translateY(-8px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .tree-diagram {
+            display: grid;
+            gap: 0.7rem;
+            padding: 0.35rem 0;
+        }
+        .tree-row {
+            display: flex;
+            justify-content: center;
+            gap: 0.9rem;
+            flex-wrap: wrap;
+        }
+        .tree-node-wrap {
+            min-width: 180px;
+            display: flex;
+            justify-content: center;
+        }
+        .service-node {
+            background: rgba(30, 41, 59, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 0.85rem 0.9rem;
+            text-align: center;
+            transition: all 0.25s ease;
+            min-height: 88px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+        .service-node .name {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .service-node .meta {
+            color: #94a3b8;
+            font-size: 0.78rem;
+        }
+        .service-node.active {
+            border-color: rgba(96, 165, 250, 0.8);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.22), 0 0 18px rgba(59, 130, 246, 0.35);
+            transform: translateY(-2px);
+        }
+        .connector {
+            height: 3px;
+            background: rgba(148, 163, 184, 0.3);
+            border-radius: 999px;
+            position: relative;
+            overflow: hidden;
+        }
+        .connector.h {
+            width: 86px;
+        }
+        .connector.v {
+            width: 3px;
+            height: 34px;
+            margin: 0 auto;
+        }
+        .connector::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: -24px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #60a5fa 0%, rgba(96, 165, 250, 0.05) 75%);
+            transform: translateY(-50%);
+            opacity: 0;
+        }
+        .connector.flow::after {
+            animation: movePacket 0.9s linear forwards;
+            opacity: 1;
+        }
+        .connector.v::after {
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .connector.v.flow::after {
+            animation: movePacketVertical 0.9s linear forwards;
+        }
+        .step-list {
+            margin-top: 1rem;
+            display: grid;
+            gap: 0.5rem;
+        }
+        .step-item {
+            background: rgba(15, 23, 42, 0.48);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 10px;
+            padding: 0.6rem 0.7rem;
+            color: #cbd5e1;
+            font-size: 0.87rem;
+        }
+        .step-item.active {
+            border-color: rgba(96, 165, 250, 0.8);
+            color: #eff6ff;
+        }
+        @keyframes movePacket {
+            0% { left: -24px; }
+            100% { left: calc(100% + 10px); }
+        }
+        @keyframes movePacketVertical {
+            0% { top: -24px; }
+            100% { top: calc(100% + 10px); }
+        }
+        @media (max-width: 1150px) {
+            .process-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<div class="container" style="max-width: 1440px;">
+    <header>
+        <h1>Process Visualizer</h1>
+        <p>Order olusturma surecini adim adim izle</p>
+        <div style="margin-top: 1rem;">
+            <a href="/admin.html" style="color: var(--text-secondary); text-decoration: none;">&larr; Back to Admin Dashboard</a>
+        </div>
+    </header>
+
+    <main class="process-layout">
+        <section class="glass-card">
+            <h3 class="panel-title">Run Controls</h3>
+            <form id="runForm" class="control-form">
+                <div class="input-group">
+                    <label for="userSelect">User</label>
+                    <select id="userSelect" required>
+                        <option value="">Loading users...</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="productSelect">Product</label>
+                    <select id="productSelect" required>
+                        <option value="">Loading products...</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="qtyInput">Quantity</label>
+                    <div class="qty-control">
+                        <button type="button" class="qty-btn" id="qtyMinusBtn">-</button>
+                        <input id="qtyInput" class="qty-input" type="number" min="1" value="1" required>
+                        <button type="button" class="qty-btn" id="qtyPlusBtn">+</button>
+                    </div>
+                </div>
+                <button id="runButton" type="submit" class="glow-button" style="justify-content: center;">Reset + Step 1</button>
+                <div class="step-controls">
+                    <button type="button" class="step-btn" id="prevStepBtn">Prev Step</button>
+                    <button type="button" class="step-btn" id="nextStepBtn">Next Step</button>
+                    <button type="button" class="step-btn" id="autoPlayBtn">Auto Play</button>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 0.82rem; margin-top: 0.2rem;">
+                    Tip: use Next Step for manual walkthrough.
+                </p>
+            </form>
+
+            <div class="step-list" id="stepList">
+                <div class="step-item" data-step="1">1) UI request baslatir</div>
+                <div class="step-item" data-step="2">2) Order Aggregator -> User Service (OpenFeign)</div>
+                <div class="step-item" data-step="3">3) Order Aggregator -> Inventory Service (WebClient)</div>
+                <div class="step-item" data-step="4">4) Order Aggregator -> External API (Netflix Feign)</div>
+                <div class="step-item" data-step="5">5) Order Aggregator -> PostgreSQL write</div>
+                <div class="step-item" data-step="6">6) Response UI'ya doner</div>
+            </div>
+        </section>
+
+        <section class="glass-card">
+            <h3 class="panel-title">Animated Service Diagram</h3>
+            <div class="tree-diagram">
+                <div class="tree-row">
+                    <div class="tree-node-wrap">
+                        <div class="service-node" id="node-ui">
+                            <span class="name">Client UI</span>
+                            <span class="meta">admin/process screen</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="connector v" id="line-ui-agg"></div>
+                <div class="tree-row">
+                    <div class="tree-node-wrap">
+                        <div class="service-node" id="node-agg">
+                            <span class="name">Order Aggregator</span>
+                            <span class="meta">port 8080</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="connector v" id="line-agg-fanout"></div>
+                <div class="tree-row">
+                    <div class="tree-node-wrap">
+                        <div class="service-node" id="node-user">
+                            <span class="name">User Service</span>
+                            <span class="meta">OpenFeign / 8081</span>
+                        </div>
+                    </div>
+                    <div class="connector h" id="line-agg-user"></div>
+                    <div class="tree-node-wrap">
+                        <div class="service-node" id="node-inventory">
+                            <span class="name">Inventory Service</span>
+                            <span class="meta">WebClient / 8082</span>
+                        </div>
+                    </div>
+                    <div class="connector h" id="line-agg-post"></div>
+                    <div class="tree-node-wrap">
+                        <div class="service-node" id="node-post">
+                            <span class="name">External API</span>
+                            <span class="meta">Netflix Feign</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="connector v" id="line-agg-db"></div>
+                <div class="tree-row">
+                    <div class="tree-node-wrap">
+                        <div class="service-node" id="node-db">
+                            <span class="name">PostgreSQL</span>
+                            <span class="meta">orders table</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="panel-title" style="margin-top: 1.25rem;">Live Terminal (Aciklamali)</h3>
+            <div class="terminal" id="terminal"></div>
+        </section>
+    </main>
+</div>
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="process.js"></script>
+</body>
+</html>
