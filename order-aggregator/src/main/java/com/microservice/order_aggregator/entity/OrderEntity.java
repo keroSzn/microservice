@@ -24,6 +24,7 @@ public class OrderEntity {
 
     private Long userId;
     private Long productId;
+    private Integer quantity;
     
     private String status;
     private LocalDateTime orderDate;

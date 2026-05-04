@@ -1,4 +1,14 @@
 // Tab Switching Logic
+function showToast(message, type = 'warn') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3300);
+}
+
 function switchTab(tabId) {
     // Update Buttons
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
@@ -36,6 +46,7 @@ async function loadUsers() {
         });
     } catch (e) {
         console.error("Failed to load users", e);
+        showToast("Users listesi yuklenemedi.", "error");
     }
 }
 
@@ -59,7 +70,7 @@ document.getElementById('addUserForm').addEventListener('submit', async (e) => {
         e.target.reset();
         loadUsers();
     } catch (err) {
-        alert("Error saving user");
+        showToast("Kullanici kaydedilemedi.", "error");
     } finally {
         btn.textContent = 'Save User';
     }
@@ -84,6 +95,7 @@ async function loadProducts() {
         });
     } catch (e) {
         console.error("Failed to load products", e);
+        showToast("Product listesi yuklenemedi.", "error");
     }
 }
 
@@ -107,13 +119,36 @@ document.getElementById('addProductForm').addEventListener('submit', async (e) =
         e.target.reset();
         loadProducts();
     } catch (err) {
-        alert("Error saving product");
+        showToast("Urun kaydedilemedi.", "error");
     } finally {
         btn.textContent = 'Save Product';
     }
 });
 
 // ================= ORDERS LOGIC =================
+function setupQuantityControls() {
+    const qtyInput = document.getElementById('orderQuantityInput');
+    const minusBtn = document.getElementById('qtyMinusBtn');
+    const plusBtn = document.getElementById('qtyPlusBtn');
+
+    const normalize = () => {
+        const val = parseInt(qtyInput.value, 10);
+        qtyInput.value = Number.isNaN(val) || val < 1 ? 1 : val;
+    };
+
+    minusBtn.addEventListener('click', () => {
+        normalize();
+        qtyInput.value = Math.max(1, parseInt(qtyInput.value, 10) - 1);
+    });
+
+    plusBtn.addEventListener('click', () => {
+        normalize();
+        qtyInput.value = parseInt(qtyInput.value, 10) + 1;
+    });
+
+    qtyInput.addEventListener('input', normalize);
+}
+
 async function loadOrders() {
     try {
         const res = await fetch('/orders/history');
@@ -127,6 +162,7 @@ async function loadOrders() {
                     <td>#${o.id}</td>
                     <td>User ${o.userId}</td>
                     <td>Product ${o.productId}</td>
+                    <td>${o.quantity ?? 1}</td>
                     <td><span class="badge" style="background: rgba(16,185,129,0.2); color: #10b981;">${o.status.replace(/_/g, ' ')}</span></td>
                     <td>${date}</td>
                 </tr>
@@ -134,6 +170,7 @@ async function loadOrders() {
         });
     } catch (e) {
         console.error("Failed to load orders", e);
+        showToast("Order history yuklenemedi.", "error");
     }
 }
 
@@ -156,6 +193,7 @@ async function populateSelectOptions() {
         });
     } catch (e) {
         console.error("Failed to load selects", e);
+        showToast("Siparis secenekleri yuklenemedi.", "error");
     }
 }
 
@@ -166,13 +204,21 @@ document.getElementById('createOrderForm').addEventListener('submit', async (e) 
 
     const uId = document.getElementById('orderUserSelect').value;
     const pId = document.getElementById('orderProductSelect').value;
+    const qty = Math.max(1, parseInt(document.getElementById('orderQuantityInput').value || '1', 10));
 
     try {
-        await fetch(`/orders/create/${uId}/${pId}`);
+        const response = await fetch(`/orders/create/${uId}/${pId}/${qty}`);
+        const result = await response.json();
+        if (!response.ok || !result.status || result.status.startsWith('ORDER_FAILED')) {
+            showToast(`Order failed: ${result.status || response.statusText}`, "error");
+            return;
+        }
+        document.getElementById('orderQuantityInput').value = 1;
+        loadProducts();
         loadOrders();
-        alert("Order processed and saved to database!");
+        showToast("Order basariyla olusturuldu.", "success");
     } catch (err) {
-        alert("Error processing order");
+        showToast("Order islenirken hata olustu.", "error");
     } finally {
         btn.textContent = 'Process Order';
     }
@@ -180,5 +226,6 @@ document.getElementById('createOrderForm').addEventListener('submit', async (e) 
 
 // Initial Load
 document.addEventListener('DOMContentLoaded', () => {
+    setupQuantityControls();
     loadUsers();
 });
