@@ -3,6 +3,7 @@ package com.microservice.order_aggregator.client;
 import com.microservice.order_aggregator.dto.ProductDTO;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.PostExchange;
 
@@ -19,4 +20,7 @@ public interface InventoryClient {
 
     @PostExchange("/products")
     ProductDTO createProduct(@RequestBody ProductDTO product);
+
+    @PostExchange("/products/{id}/consume")
+    ProductDTO consumeStock(@PathVariable("id") Long id, @RequestParam("amount") Integer amount);
 }
